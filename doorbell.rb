@@ -38,7 +38,7 @@ flowdock = Flowdock::Client.new(api_token: FLOWDOCK_API_TOKEN)
 
 logger.success "Created Flowdock client"
 
-store = YAML::Store.new("./doorbell_notifier.store", true)
+store = YAML::Store.new("./doorbell.yml", true)
 
 logger.info "Starting rtl_433..."
 
@@ -53,21 +53,29 @@ IO.popen("/Users/matt/Code/rtl_433/build/src/rtl_433 -R 115 -R 116 -M newmodel -
 
         now = Time.now
         store.transaction do
-          last_message_id = store["last_message_id"]
+          last_thread_id = store["last_thread_id"]
           last_message_sent_at = store["last_message_sent_at"]
+          last_message_body = store["last_message_body"]
 
-          content = "@team, #{MESSAGES.sample}"
-          message = if last_message_id && last_message_sent_at && last_message_sent_at.to_date == now.to_date
-            flowdock.chat_message(flow: "kisko:war-room", content: content)
-          else
-            flowdock.chat_message(flow: "kisko:war-room", content: content, message: last_message_id)
+          body = nil
+
+          while body.nil? || body == last_message_body
+            body = MESSAGES.sample
           end
 
-          if message["id"]
+          content = "@team, #{body}"
+          message = if last_thread_id && last_message_sent_at && last_message_sent_at.to_date == now.to_date
+            flowdock.chat_message(flow: "kisko:war-room", content: content, thread_id: last_thread_id)
+          else
+            flowdock.chat_message(flow: "kisko:war-room", content: content)
+          end
+
+          if message["thread_id"]
             logger.success "Posted a message on Flowdock"
             logger.debug message.inspect
 
-            store["last_message_id"] = message["id"]
+            store["body"] = body
+            store["last_thread_id"] = message["thread_id"]
             store["last_message_sent_at"] = now
           else
             logger.error "Something went wrong with the Flowdock message"
