@@ -10,6 +10,7 @@ gemfile do
   source "https://rubygems.org"
   gem "flowdock"
   gem "tty-logger", git: "https://github.com/piotrmurach/tty-logger.git", ref: "a70e8cc0d1931c956d23005f0cb26dc8226ed994"
+  gem "tty-which"
   gem "concurrent-ruby", require: "concurrent"
 end
 
@@ -21,7 +22,12 @@ logger = TTY::Logger.new do |config|
   config.level = :debug
 end
 
-RTL_433_PATH = "/Users/matt/Code/rtl_433/build/src/rtl_433"
+RTL_433_PATH = TTY::Which.which("rtl_433")
+
+unless RTL_433_PATH
+  logger.fatal "rtl_433 not found, make sure it's in PATH"
+  exit 1
+end
 
 RTL_433_VERSION_REGEXP = /rtl_433 version ([\d\w\.-]+)/i
 
