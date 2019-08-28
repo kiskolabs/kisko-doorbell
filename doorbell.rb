@@ -68,6 +68,12 @@ FLOWDOCK_API_TOKEN = ENV.fetch("FLOWDOCK_API_TOKEN")
 obfuscated_token = "#{FLOWDOCK_API_TOKEN[0..10]}..."
 logger.info "Flowdock configured", token: obfuscated_token, flow: FLOWDOCK_FLOW
 
+YAML_STORE_PATH = = Dir::Tmpname.create(["kisko-doorbell", ".yml"]) do |tmpname, _, _|
+  tmpname
+end
+
+logger.info "YAML store configured", path: YAML_STORE_PATH
+
 class BackgroundMessageHandler
   include Concurrent::Async
 
@@ -79,10 +85,10 @@ class BackgroundMessageHandler
     "could someone please go open the office door"
   ]
 
-  def initialize(logger: TTY::Logger.new)
+  def initialize(logger: TTY::Logger.new, store_path: YAML_STORE_PATH)
     super()
     @logger = logger
-    @store = YAML::Store.new("./doorbell.yml", true)
+    @store = YAML::Store.new(YAML_STORE_PATH, true)
     @flowdock = Flowdock::Client.new(api_token: FLOWDOCK_API_TOKEN)
   end
 
