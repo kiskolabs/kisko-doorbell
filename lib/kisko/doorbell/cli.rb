@@ -49,8 +49,7 @@ module Kisko
                 doorbell_id: doorbell_id,
                 flowdock_flow: flowdock_flow,
                 flowdock_token: flowdock_token,
-                store_path: yaml_store_path,
-                silence_flowdock: silence_flowdock
+                store_path: yaml_store_path
               )
             else
               logger.debug line.rstrip
@@ -74,7 +73,7 @@ module Kisko
       def check_flowdock
         if flowdock_token && flowdock_flow
           obfuscated_token = "#{flowdock_token[0..10]}..."
-          logger.info "Flowdock configured", token: obfuscated_token, flow: flowdock_flow
+          logger.success "Flowdock configured", token: obfuscated_token, flow: flowdock_flow
           true
         else
           logger.fatal "Flowdock token and flow ID missing"
@@ -130,9 +129,9 @@ module Kisko
         common = ["-R", "115", "-R", "116", "-M", "newmodel", "-F", "json", "-f", "868300000"]
 
         if test_mode
-          test_path = File.expand_path("../../../spec/fixtures/g001_868.3M_250k.cu8", __dir__)
+          test_path = File.expand_path("../../../signals/g001_868.3M_250k.cu8", __dir__)
           logger.info "Using test signal", path: test_path
-          common + ["-r", "spec/fixtures/g001_868.3M_250k.cu8"]
+          common + ["-r", test_path]
         else
           common
         end
