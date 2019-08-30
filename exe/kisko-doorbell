@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+
+require "optparse"
+require "kisko/doorbell"
+require "kisko/doorbell/version"
+
+trap "SIGINT" do
+  exit 130
+end
+
+options = {}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: kisko-doorbell [options]"
+
+  opts.on("-d", "--doorbell-id=ID", "Doorbell ID (decimal, not hex)") do |v|
+    options[:doorbell_id] = v
+  end
+
+  opts.on("-f", "--flowdock-flow=FLOW", "Flowdock flow ID") do |v|
+    options[:flowdock_flow] = v
+  end
+
+  opts.on("-t", "--flowdock-token=TOKEN", "Flowdock API token") do |v|
+    options[:flowdock_token] = v
+  end
+
+  opts.on("-T", "--[no-]test", "Run in test mode instead of using the receiver") do |v|
+    options[:test_mode] = v
+  end
+
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
+
+  opts.on_tail("-v", "--version", "Show version") do
+    puts "kisko-doorbell v#{Kisko::Doorbell::VERSION}"
+    exit
+  end
+end.parse!
+
+logger = TTY::Logger.new do |config|
+  config.level = :debug
+end
+
+cli = Kisko::Doorbell::CLI.new(
+  **options,
+  logger: logger
+)
+
+unless cli.check_prerequisites
+  cli.logger.fatal "Start up checks failed"
+  exit 99
+end
+
+success = cli.run!
+
+if success
+  exit 0
+else
+  exit 1
+end
