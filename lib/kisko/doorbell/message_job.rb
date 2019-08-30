@@ -27,7 +27,7 @@ module Kisko
 
           if json["id"] == doorbell_id
             logger.success "This is the doorbell we want", id: json["id"]
-            # notify_flowdock(token: flowdock_token, store_path: store_path)
+            notify_flowdock(token: flowdock_token, store_path: store_path)
           else
             logger.debug "This isn't the doorbell we want", id: json["id"]
           end
