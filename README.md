@@ -30,6 +30,24 @@ Usage: kisko-doorbell [options]
     -v, --version                    Show version
 ```
 
+## Sample systemd service
+
+```ini
+[Unit]
+Description=Kisko Doorbell
+
+[Service]
+SyslogIdentifier=kisko-doorbell
+User=root
+
+ExecStart=/usr/local/bin/kisko-doorbell --flowdock-token="abcde12345" --flowdock-flow="org:flow" --doorbell-id=123456
+ExecStop=/bin/kill -s QUIT $MAINPID
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
