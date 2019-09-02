@@ -29,6 +29,7 @@ module Kisko
         return false unless check_rtl_433
         return false unless check_flowdock
         return false unless check_doorbell_id
+        return false unless check_yaml_store_path
         true
       end
 
@@ -119,6 +120,10 @@ module Kisko
           logger.fatal "rtl_433 binary not found"
           false
         end
+      end
+
+      def check_yaml_store_path
+        logger.success "YAML store configured", path: yaml_store_path
       end
 
       def rtl_433_path

@@ -7,11 +7,17 @@ module Kisko
       include SuckerPunch::Job
 
       MESSAGES = [
-        "someone is at the office door",
-        "there's someone at the door",
-        "the doorbell just rang",
-        "someone just rang the doorbell",
-        "could someone please go open the office door"
+        "Someone is at the office door",
+        "There's someone at the door",
+        "The doorbell just rang",
+        "Someone just rang the doorbell",
+        "Could someone please go open the office door"
+      ]
+
+      URGENT_MESSAGES = [
+        "@team, someone is still at the door",
+        "@team, please answer the door ASAP!",
+        "@team, seriously. Open the door."
       ]
 
       attr_reader :line, :doorbell_id, :flowdock_flow, :flowdock_token, :store_path
@@ -46,9 +52,8 @@ module Kisko
           last_message_sent_at = store["last_message_sent_at"]
           last_message_body = store["last_message_body"]
 
-          body = next_message(last_message_body)
+          content = next_message(last_message_body, last_message_sent_at)
 
-          content = "@team, #{body}"
           message = if last_thread_id && last_message_sent_at && last_message_sent_at.to_date == now.to_date
             flowdock.chat_message(flow: flowdock_flow, content: content, thread_id: last_thread_id)
           else
@@ -56,10 +61,10 @@ module Kisko
           end
 
           if message["thread_id"]
-            logger.success "Posted a message on Flowdock"
+            logger.success "Posted a Flowdock message", content: content, thread: message["thread_id"]
             logger.debug message.inspect
 
-            store["body"] = body
+            store["body"] = content
             store["last_thread_id"] = message["thread_id"]
             store["last_message_sent_at"] = now
           else
@@ -68,11 +73,15 @@ module Kisko
         end
       end
 
-      private def next_message(last_message)
+      private def next_message(last_message, last_message_sent_at)
         new_message = last_message
 
         while new_message == last_message
-          new_message = MESSAGES.sample
+          if last_message_sent_at.nil? || (Time.now - last_message_sent_at) > 120 # seconds
+            new_message = MESSAGES.sample
+          else
+            new_message = URGENT_MESSAGES.sample
+          end
         end
 
         new_message
