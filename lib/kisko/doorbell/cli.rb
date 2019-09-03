@@ -5,6 +5,7 @@ require "tty-logger"
 require "tty-which"
 require "yaml/store"
 require "sucker_punch"
+require "honeybadger"
 
 require_relative "message_job"
 
@@ -21,6 +22,9 @@ module Kisko
         @doorbell_id = doorbell_id ? Integer(doorbell_id) : nil
         @logger = logger
         @test_mode = test_mode
+
+        SuckerPunch.logger = logger
+        SuckerPunch.exception_handler = -> (ex, _klass, _args) { Honeybadger.notify(ex) }
       end
 
       def check_prerequisites
@@ -34,8 +38,6 @@ module Kisko
       end
 
       def run!
-        SuckerPunch.logger = logger
-
         logger.info "Starting rtl_433", arguments: rtl_433_arguments
 
         Open3.popen2e(rtl_433_path, *rtl_433_arguments) do |_stdin, io, wait_thr|
@@ -59,6 +61,9 @@ module Kisko
         end
 
         return true
+      rescue => exception
+        Honeybadger.notify(exception)
+        return false
       end
 
       def check_rtl_433_path

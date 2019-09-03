@@ -3,6 +3,7 @@ PATH
   specs:
     kisko-doorbell (0.2.0)
       flowdock (~> 0.7)
+      honeybadger (~> 4.0)
       sucker_punch (~> 2.0)
       tty-logger (~> 0.1)
       tty-which (~> 0.4)
@@ -17,6 +18,7 @@ GEM
     flowdock (0.7.1)
       httparty (~> 0.7)
       multi_json
+    honeybadger (4.5.1)
     httparty (0.17.0)
       mime-types (~> 3.0)
       multi_xml (>= 0.5.2)

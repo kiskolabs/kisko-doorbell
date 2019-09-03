@@ -39,7 +39,7 @@ Description=Kisko Doorbell
 [Service]
 SyslogIdentifier=kisko-doorbell
 User=root
-
+Environment="HONEYBADGER_API_KEY=def456" "HONEYBADGER_ENV=production"
 ExecStart=/usr/local/bin/kisko-doorbell --flowdock-token="abcde12345" --flowdock-flow="org:flow" --doorbell-id=123456
 ExecStop=/bin/kill -s QUIT $MAINPID
 Restart=always
