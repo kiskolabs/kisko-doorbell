@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    kisko-doorbell (0.2.0)
+    kisko-doorbell (0.3.0)
       flowdock (~> 0.7)
       honeybadger (~> 4.0)
       sucker_punch (~> 2.0)
