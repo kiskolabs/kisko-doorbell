@@ -52,7 +52,7 @@ module Kisko
                 doorbell_id: doorbell_id,
                 flowdock_flow: flowdock_flow,
                 flowdock_token: flowdock_token,
-                store_path: yaml_store_path
+                store: yaml_store
               )
             else
               logger.debug line.rstrip
@@ -151,6 +151,10 @@ module Kisko
         @yaml_store_path ||= Dir::Tmpname.create(["kisko-doorbell", ".yml"]) do |tmpname, _, _|
           tmpname
         end
+      end
+
+      def yaml_store
+        @yaml_store ||= YAML::Store.new(store_path, true)
       end
     end
   end

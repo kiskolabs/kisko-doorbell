@@ -20,7 +20,7 @@ module Kisko
         "@team, seriously. Open the door."
       ]
 
-      attr_reader :line, :doorbell_id, :flowdock_flow, :flowdock_token, :store_path
+      attr_reader :line, :doorbell_id, :flowdock_flow, :flowdock_token, :store
 
       def perform(**kwargs)
         kwargs.each do |key, value|
@@ -33,7 +33,7 @@ module Kisko
 
           if json["id"] == doorbell_id
             logger.success "This is the doorbell we want", id: json["id"]
-            notify_flowdock(token: flowdock_token, store_path: store_path)
+            notify_flowdock
           else
             logger.debug "This isn't the doorbell we want", id: json["id"]
           end
@@ -42,10 +42,9 @@ module Kisko
         end
       end
 
-      def notify_flowdock(token:, store_path:)
+      def notify_flowdock
         now = Time.now
-        flowdock = Flowdock::Client.new(api_token: token)
-        store = YAML::Store.new(store_path, true)
+        flowdock = Flowdock::Client.new(api_token: flowdock_token)
 
         store.transaction do
           last_thread_id = store["last_thread_id"]
