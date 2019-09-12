@@ -20,7 +20,7 @@ module Kisko
         "@team, seriously. Open the door."
       ]
 
-      attr_reader :line, :doorbell_id, :flowdock_flow, :flowdock_token, :store
+      attr_reader :line, :doorbell_id, :flowdock_flow, :flowdock_token, :store_path
 
       def perform(**kwargs)
         kwargs.each do |key, value|
@@ -70,6 +70,10 @@ module Kisko
             logger.error "Flowdock error", response: message
           end
         end
+      end
+
+      private def store
+        @yaml_store ||= YAML::Store.new(store_path, true)
       end
 
       private def next_message(last_message, last_message_sent_at)
