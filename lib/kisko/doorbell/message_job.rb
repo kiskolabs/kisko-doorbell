@@ -11,13 +11,18 @@ module Kisko
         "There's someone at the door",
         "The doorbell just rang",
         "Someone just rang the doorbell",
-        "Could someone please go open the office door"
+        "Could someone please go open the office door",
+        "🛎ding dong, someone wants in🛎",
+        "🔔bing bong, the doorbell rang🔔",
+        "Hello 👋, please open the door"
       ]
 
       URGENT_MESSAGES = [
         "@team, someone is still at the door",
         "@team, please answer the door ASAP!",
-        "@team, seriously. Open the door."
+        "@team, seriously. Open the door.",
+        "@team, open the 🚪, please",
+        "@team, someone seems to be waiting❗️"
       ]
 
       attr_reader :line, :doorbell_id, :flowdock_flow, :flowdock_token, :store_path
