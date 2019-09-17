@@ -12,8 +12,8 @@ module Kisko
         "The doorbell just rang",
         "Someone just rang the doorbell",
         "Could someone please go open the office door",
-        "🛎ding dong, someone wants in🛎",
-        "🔔bing bong, the doorbell rang🔔",
+        "🛎 ding dong, someone wants in 🛎",
+        "🔔 bing bong, the doorbell rang 🔔",
         "Hello 👋, please open the door"
       ]
 
