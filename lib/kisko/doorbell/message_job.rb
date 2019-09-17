@@ -56,6 +56,10 @@ module Kisko
           last_message_sent_at = store["last_message_sent_at"]
           last_message_body = store["last_message_body"]
 
+          unless last_message_sent_at.nil? || (Time.now - last_message_sent_at) > 5 # seconds
+            return # If it's too soon after the last message, skip sending a new one
+          end
+
           content = next_message(last_message_body, last_message_sent_at)
 
           message = if last_thread_id && last_message_sent_at && last_message_sent_at.to_date == now.to_date
