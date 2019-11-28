@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    kisko-doorbell (0.4.1)
+    kisko-doorbell (0.4.2)
       flowdock (~> 0.7)
       honeybadger (~> 4.0)
       slack-ruby-client (~> 0.14)

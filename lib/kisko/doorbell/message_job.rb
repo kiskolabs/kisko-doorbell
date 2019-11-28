@@ -120,7 +120,7 @@ module Kisko
             new_message = MESSAGES.sample
           else
             new_message = URGENT_MESSAGES.sample
-            new_message = slack ? "@here, #{new_message}" : "@team, #{new_message}"
+            new_message = slack ? "<!here>, #{new_message}" : "@team, #{new_message}"
           end
         end
 
