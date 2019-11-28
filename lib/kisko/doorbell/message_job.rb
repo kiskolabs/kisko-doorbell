@@ -19,11 +19,11 @@ module Kisko
       ]
 
       URGENT_MESSAGES = [
-        "@team, someone is still at the door",
-        "@team, please answer the door ASAP!",
-        "@team, seriously. Open the door.",
-        "@team, open the 🚪, please",
-        "@team, someone seems to be waiting❗️"
+        "someone is still at the door",
+        "please answer the door ASAP!",
+        "seriously. Open the door.",
+        "open the 🚪, please",
+        "someone seems to be waiting❗️"
       ]
 
       attr_reader :line, :doorbell_id, :flowdock_flow, :flowdock_token, :store_path,
@@ -62,7 +62,7 @@ module Kisko
             return # If it's too soon after the last message, skip sending a new one
           end
 
-          content = next_message(last_message_body, last_message_sent_at)
+          content = next_message(last_message_body, last_message_sent_at, slack: true)
 
           response = slack.chat_postMessage(channel: slack_channel, text: content, icon_emoji: ":bellhop_bell:")
 
@@ -112,7 +112,7 @@ module Kisko
         @yaml_store ||= YAML::Store.new(store_path, true)
       end
 
-      private def next_message(last_message, last_message_sent_at)
+      private def next_message(last_message, last_message_sent_at, slack: false)
         new_message = last_message
 
         while new_message == last_message
@@ -120,6 +120,7 @@ module Kisko
             new_message = MESSAGES.sample
           else
             new_message = URGENT_MESSAGES.sample
+            new_message = slack ? "@here, #{new_message}" : "@team, #{new_message}"
           end
         end
 
