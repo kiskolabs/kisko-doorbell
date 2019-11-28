@@ -14,11 +14,13 @@ module Kisko
     class CLI
       RTL_433_VERSION_REGEXP = /rtl_433 version ([\d\w\.-]+)/i
 
-      attr_reader :flowdock_token, :flowdock_flow, :doorbell_id, :logger, :test_mode
+      attr_reader :flowdock_token, :flowdock_flow, :slack_token, :slack_channel, :doorbell_id, :logger, :test_mode
 
-      def initialize(flowdock_token:, flowdock_flow:, doorbell_id:, logger:, test_mode: false)
+      def initialize(flowdock_token:, flowdock_flow:, slack_token: nil, slack_channel: nil, doorbell_id:, logger:, test_mode: false)
         @flowdock_token = flowdock_token
         @flowdock_flow = flowdock_flow
+        @slack_token = slack_token
+        @slack_channel = slack_channel
         @doorbell_id = doorbell_id ? Integer(doorbell_id) : nil
         @logger = logger
         @test_mode = test_mode
@@ -32,6 +34,7 @@ module Kisko
         return false unless check_rtl_433_path
         return false unless check_rtl_433
         return false unless check_flowdock
+        return false unless check_slack
         return false unless check_doorbell_id
         return false unless check_yaml_store_path
         true
@@ -52,6 +55,8 @@ module Kisko
                 doorbell_id: doorbell_id,
                 flowdock_flow: flowdock_flow,
                 flowdock_token: flowdock_token,
+                slack_token: slack_token,
+                slack_channel: slack_channel,
                 store_path: yaml_store_path
               )
             else
@@ -85,6 +90,17 @@ module Kisko
           logger.fatal "Flowdock token and flow ID missing"
           false
         end
+      end
+
+      def check_slack
+        if slack_token && slack_channel
+          obfuscated_token = "#{slack_token[0..10]}..."
+          logger.success "Slack configured", token: obfuscated_token, channel: slack_channel
+        else
+          logger.info "Slack token and channel missing"
+        end
+
+        true
       end
 
       def check_doorbell_id

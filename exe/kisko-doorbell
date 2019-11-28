@@ -25,6 +25,14 @@ OptionParser.new do |opts|
     options[:flowdock_token] = v
   end
 
+  opts.on("-c", "--slack-channel=CHANNEL", "Slack channel") do |v|
+    options[:slack_channel] = v
+  end
+
+  opts.on("-a", "--slack-token=TOKEN", "Slack API token") do |v|
+    options[:slack_token] = v
+  end
+
   opts.on("-T", "--[no-]test", "Run in test mode instead of using the receiver") do |v|
     options[:test_mode] = v
   end

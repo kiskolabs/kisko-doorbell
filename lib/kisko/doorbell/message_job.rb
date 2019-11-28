@@ -1,5 +1,6 @@
 require "sucker_punch"
 require "flowdock"
+require "slack"
 
 module Kisko
   module Doorbell
@@ -25,7 +26,8 @@ module Kisko
         "@team, someone seems to be waiting❗️"
       ]
 
-      attr_reader :line, :doorbell_id, :flowdock_flow, :flowdock_token, :store_path
+      attr_reader :line, :doorbell_id, :flowdock_flow, :flowdock_token, :store_path,
+        :slack_token, :slack_channel
 
       def perform(**kwargs)
         kwargs.each do |key, value|
@@ -38,12 +40,37 @@ module Kisko
 
           if json["id"] == doorbell_id
             logger.success "This is the doorbell we want", id: json["id"]
+            notify_slack if slack_channel && slack_token
             notify_flowdock
           else
             logger.debug "This isn't the doorbell we want", id: json["id"]
           end
         rescue JSON::ParserError
           logger.warn "JSON parse error", json: line
+        end
+      end
+
+      def notify_slack
+        now = Time.now
+        slack = Slack::Web::Client.new(token: slack_token)
+
+        store.transaction do
+          last_message_sent_at = store["last_message_sent_at"]
+          last_message_body = store["last_message_body"]
+
+          unless last_message_sent_at.nil? || (Time.now - last_message_sent_at) > 5 # seconds
+            return # If it's too soon after the last message, skip sending a new one
+          end
+
+          content = next_message(last_message_body, last_message_sent_at)
+
+          response = slack.chat_postMessage(channel: slack_channel, text: content, icon_emoji: ":bellhop_bell:")
+
+          logger.success "Posted a Slack message", content: content, channel: response["channel"]
+          logger.debug response.to_h.inspect
+
+          store["body"] = content
+          store["last_message_sent_at"] = now
         end
       end
 
