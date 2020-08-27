@@ -1,5 +1,4 @@
 require "sucker_punch"
-require "flowdock"
 require "slack"
 
 module Kisko
@@ -26,8 +25,7 @@ module Kisko
         "someone seems to be waiting❗️"
       ]
 
-      attr_reader :line, :doorbell_id, :flowdock_flow, :flowdock_token, :store_path,
-        :slack_token, :slack_channel
+      attr_reader :line, :doorbell_id, :store_path, :slack_token, :slack_channel
 
       def perform(**kwargs)
         kwargs.each do |key, value|
@@ -40,8 +38,7 @@ module Kisko
 
           if json["id"] == doorbell_id
             logger.success "This is the doorbell we want", id: json["id"]
-            notify_slack if slack_channel && slack_token
-            notify_flowdock
+            notify_slack
           else
             logger.debug "This isn't the doorbell we want", id: json["id"]
           end
@@ -71,40 +68,6 @@ module Kisko
 
           store["body"] = content
           store["last_message_sent_at"] = now
-        end
-      end
-
-      def notify_flowdock
-        now = Time.now
-        flowdock = Flowdock::Client.new(api_token: flowdock_token)
-
-        store.transaction do
-          last_thread_id = store["last_thread_id"]
-          last_message_sent_at = store["last_message_sent_at"]
-          last_message_body = store["last_message_body"]
-
-          unless last_message_sent_at.nil? || (Time.now - last_message_sent_at) > 5 # seconds
-            return # If it's too soon after the last message, skip sending a new one
-          end
-
-          content = next_message(last_message_body, last_message_sent_at)
-
-          message = if last_thread_id && last_message_sent_at && last_message_sent_at.to_date == now.to_date
-            flowdock.chat_message(flow: flowdock_flow, content: content, thread_id: last_thread_id)
-          else
-            flowdock.chat_message(flow: flowdock_flow, content: content)
-          end
-
-          if message["thread_id"]
-            logger.success "Posted a Flowdock message", content: content, thread: message["thread_id"]
-            logger.debug message.inspect
-
-            store["body"] = content
-            store["last_thread_id"] = message["thread_id"]
-            store["last_message_sent_at"] = now
-          else
-            logger.error "Flowdock error", response: message
-          end
         end
       end
 

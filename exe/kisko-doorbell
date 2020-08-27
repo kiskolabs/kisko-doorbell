@@ -17,19 +17,11 @@ OptionParser.new do |opts|
     options[:doorbell_id] = v
   end
 
-  opts.on("-f", "--flowdock-flow=FLOW", "Flowdock flow ID") do |v|
-    options[:flowdock_flow] = v
-  end
-
-  opts.on("-t", "--flowdock-token=TOKEN", "Flowdock API token") do |v|
-    options[:flowdock_token] = v
-  end
-
   opts.on("-c", "--slack-channel=CHANNEL", "Slack channel") do |v|
     options[:slack_channel] = v
   end
 
-  opts.on("-a", "--slack-token=TOKEN", "Slack API token") do |v|
+  opts.on("-t", "--slack-token=TOKEN", "Slack API token") do |v|
     options[:slack_token] = v
   end
 

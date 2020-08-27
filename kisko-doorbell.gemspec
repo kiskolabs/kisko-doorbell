@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Matias Korhonen"]
   spec.email         = ["matias@kiskolabs.com"]
 
-  spec.summary       = %q{Use rtl_433 to notify Flowdock when a doorbell rings}
-  spec.description   = %q{Listen for a doorbell signal using rtl_433 and an RTL-SDR receiver and notify Flowdock when the right doorbell rings}
+  spec.summary       = %q{Use rtl_433 to notify Slack when a doorbell rings}
+  spec.description   = %q{Listen for a doorbell signal using rtl_433 and an RTL-SDR receiver and notify Slack when the right doorbell rings}
   spec.homepage      = "https://github.com/kiskolabs/kisko-doorbell"
   spec.license       = "MIT"
 
@@ -28,7 +28,6 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "flowdock", "~> 0.7"
   spec.add_runtime_dependency "tty-logger", "~> 0.1"
   spec.add_runtime_dependency "tty-which", "~> 0.4"
   spec.add_runtime_dependency "sucker_punch", "~> 2.0"

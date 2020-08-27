@@ -14,11 +14,9 @@ module Kisko
     class CLI
       RTL_433_VERSION_REGEXP = /rtl_433 version ([\d\w\.-]+)/i
 
-      attr_reader :flowdock_token, :flowdock_flow, :slack_token, :slack_channel, :doorbell_id, :logger, :test_mode
+      attr_reader :slack_token, :slack_channel, :doorbell_id, :logger, :test_mode
 
-      def initialize(flowdock_token:, flowdock_flow:, slack_token: nil, slack_channel: nil, doorbell_id:, logger:, test_mode: false)
-        @flowdock_token = flowdock_token
-        @flowdock_flow = flowdock_flow
+      def initialize(slack_token: nil, slack_channel: nil, doorbell_id:, logger:, test_mode: false)
         @slack_token = slack_token
         @slack_channel = slack_channel
         @doorbell_id = doorbell_id ? Integer(doorbell_id) : nil
@@ -33,7 +31,6 @@ module Kisko
         logger.info "Checking prerequisites..."
         return false unless check_rtl_433_path
         return false unless check_rtl_433
-        return false unless check_flowdock
         return false unless check_slack
         return false unless check_doorbell_id
         return false unless check_yaml_store_path
@@ -53,8 +50,6 @@ module Kisko
               MessageJob.perform_async(
                 line: line,
                 doorbell_id: doorbell_id,
-                flowdock_flow: flowdock_flow,
-                flowdock_token: flowdock_token,
                 slack_token: slack_token,
                 slack_channel: slack_channel,
                 store_path: yaml_store_path
@@ -81,26 +76,15 @@ module Kisko
         end
       end
 
-      def check_flowdock
-        if flowdock_token && flowdock_flow
-          obfuscated_token = "#{flowdock_token[0..10]}..."
-          logger.success "Flowdock configured", token: obfuscated_token, flow: flowdock_flow
-          true
-        else
-          logger.fatal "Flowdock token and flow ID missing"
-          false
-        end
-      end
-
       def check_slack
         if slack_token && slack_channel
           obfuscated_token = "#{slack_token[0..10]}..."
           logger.success "Slack configured", token: obfuscated_token, channel: slack_channel
+          true
         else
-          logger.info "Slack token and channel missing"
+          logger.fatal "Slack token and channel missing"
+          false
         end
-
-        true
       end
 
       def check_doorbell_id

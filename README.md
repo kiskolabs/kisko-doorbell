@@ -1,6 +1,6 @@
 # Kisko::Doorbell
 
-Listen for the doorbell signal using [rtl_433](https://github.com/merbanan/rtl_433) and an [RTL-SDR](https://www.rtl-sdr.com) receiver and notify Flowdock when the right doorbell rings.
+Listen for the doorbell signal using [rtl_433](https://github.com/merbanan/rtl_433) and an [RTL-SDR](https://www.rtl-sdr.com) receiver and notify Slack when the right doorbell rings.
 
 ## Installation
 
@@ -23,8 +23,8 @@ Or install it yourself as:
 ```
 Usage: kisko-doorbell [options]
     -d, --doorbell-id=ID             Doorbell ID (decimal, not hex)
-    -f, --flowdock-flow=FLOW         Flowdock flow ID
-    -t, --flowdock-token=TOKEN       Flowdock API token
+    -c, --slack-channel=#CHANNEL     Slack channel
+    -t, --slack-token=TOKEN          Slack API token
     -T, --[no-]test                  Run in test mode instead of using the receiver
     -h, --help                       Show this message
     -v, --version                    Show version
@@ -40,7 +40,7 @@ Description=Kisko Doorbell
 SyslogIdentifier=kisko-doorbell
 User=root
 Environment="HONEYBADGER_API_KEY=def456" "HONEYBADGER_ENV=production"
-ExecStart=/usr/local/bin/kisko-doorbell --flowdock-token="abcde12345" --flowdock-flow="org:flow" --doorbell-id=123456
+ExecStart=/usr/local/bin/kisko-doorbell --slack-token="abcde12345" --slack-channel="#general" --doorbell-id=123456
 ExecStop=/bin/kill -s QUIT $MAINPID
 Restart=always
 
