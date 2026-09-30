@@ -1,6 +1,8 @@
 require "spec_helper"
 require "json"
+require "rbconfig"
 require "stringio"
+require "timeout"
 require "tmpdir"
 
 require File.expand_path("../../../usr/bin/release", __dir__)
@@ -52,6 +54,35 @@ RSpec.describe KiskoDoorbellRelease do
     end
   end
 
+  describe KiskoDoorbellRelease::CommandRunner do
+    it "streams redacted output before the command finishes" do
+      output = Class.new do
+        attr_reader :lines
+
+        def initialize
+          @lines = Queue.new
+        end
+
+        def print(line)
+          @lines << line
+        end
+      end.new
+      runner = described_class.new(output: output)
+      command = [
+        RbConfig.ruby,
+        "-e",
+        '$stdout.sync = true; puts "started"; sleep 0.5; puts "xoxb-sensitive-output"'
+      ]
+
+      worker = Thread.new { runner.run(command, label: "stream test") }
+
+      expect(Timeout.timeout(2) { output.lines.pop }).to eq("started\n")
+      expect(worker).to be_alive
+      worker.value
+      expect(Timeout.timeout(2) { output.lines.pop }).to eq("[REDACTED SLACK TOKEN]\n")
+    end
+  end
+
   describe KiskoDoorbellRelease::LiveCheck do
     it "requires an explicit confirmation after the physical test" do
       output = StringIO.new
@@ -96,11 +127,17 @@ RSpec.describe KiskoDoorbellRelease do
           output: output
         ).run
 
-        remote_commands = runner.calls.filter_map { |call| call.dig(:options, :input) }.join("\n")
+        remote_scripts = runner.calls.filter_map { |call| call.dig(:options, :input) }
+        remote_commands = remote_scripts.join("\n")
         expect(result).to eq(true)
+        remote_scripts.each do |script|
+          _stdout, stderr, status = Open3.capture3("sh", "-n", stdin_data: script)
+          expect(status).to be_success, stderr
+        end
         expect(remote_commands).to include("gem build kisko-doorbell.gemspec")
-        expect(remote_commands).to include("gem install --conservative --no-document")
-        expect(remote_commands).not_to include("gem install --local")
+        expect(remote_commands).to include("Gem::Package.new")
+        expect(remote_commands).to include('"gem", "install", dependency.name')
+        expect(remote_commands).to include("gem install --local --conservative --no-document --verbose")
         expect(remote_commands).to include("systemctl restart kisko-doorbell")
         expect(remote_commands).to include("KISKO_DOORBELL_SLACK_TOKEN_FILE")
         expect(remote_commands).to include("sudo test -r /etc/kisko-doorbell/slack-token")

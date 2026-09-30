@@ -155,14 +155,27 @@ module KiskoDoorbellRelease
 
     def initialize(output: $stdout)
       @output = output
+      @output_mutex = Mutex.new
     end
 
     def run(command, label:, directory: nil, environment: {}, input: nil, show_output: true)
-      options = {stdin_data: input.to_s}
+      options = {}
       options[:chdir] = directory if directory
-      stdout, stderr, status = Open3.capture3(environment, *command, **options)
-      print_output(stdout, stderr) if show_output
-      return stdout if status.success?
+      stdout_content = +""
+      stderr_content = +""
+      status = nil
+
+      Open3.popen3(environment, *command, **options) do |stdin, stdout, stderr, wait_thread|
+        readers = [
+          Thread.new { consume(stdout, stdout_content, show_output) },
+          Thread.new { consume(stderr, stderr_content, show_output) }
+        ]
+        write_input(stdin, input)
+        readers.each(&:value)
+        status = wait_thread.value
+      end
+
+      return stdout_content if status.success?
 
       raise CommandError, "#{label} failed with exit status #{status.exitstatus}"
     rescue Errno::ENOENT => error
@@ -171,9 +184,29 @@ module KiskoDoorbellRelease
 
     private
 
-    def print_output(*streams)
-      content = streams.reject(&:empty?).join("\n").gsub(TOKEN_PATTERN, "[REDACTED SLACK TOKEN]")
-      @output.puts(content) unless content.empty?
+    def consume(stream, content, show_output)
+      stream.each_line do |line|
+        content << line
+        print_output(line) if show_output
+      end
+    ensure
+      stream.close
+    end
+
+    def write_input(stdin, input)
+      stdin.write(input.to_s)
+    rescue Errno::EPIPE
+      nil
+    ensure
+      stdin.close
+    end
+
+    def print_output(line)
+      redacted_line = line.gsub(TOKEN_PATTERN, "[REDACTED SLACK TOKEN]")
+      @output_mutex.synchronize do
+        @output.print(redacted_line)
+        @output.flush if @output.respond_to?(:flush)
+      end
     end
   end
 
@@ -318,7 +351,18 @@ module KiskoDoorbellRelease
       <<~SHELL
         set -eu
         cd #{quoted(@configuration.repository)}
-        #{privileged("gem install --conservative --no-document #{quoted("./#{gem_filename}")}")}
+        #{privileged("ruby -rrubygems/package - #{quoted("./#{gem_filename}")}")} <<'RUBY'
+        package = Gem::Package.new(ARGV.fetch(0))
+        package.spec.runtime_dependencies.each do |dependency|
+          installed = system(
+            "gem", "install", dependency.name,
+            "--version", dependency.requirement.to_s,
+            "--conservative", "--no-document", "--verbose"
+          )
+          exit 1 unless installed
+        end
+        RUBY
+        #{privileged("gem install --local --conservative --no-document --verbose #{quoted("./#{gem_filename}")}")}
       SHELL
     end
 

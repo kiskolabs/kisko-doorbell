@@ -118,17 +118,29 @@ cd /home/pi/kisko-doorbell
 git fetch origin master
 git checkout --detach <release-commit>
 gem build kisko-doorbell.gemspec
-sudo gem install --conservative --no-document ./kisko-doorbell-0.5.1.gem
+sudo ruby -rrubygems/package - ./kisko-doorbell-0.5.1.gem <<'RUBY'
+package = Gem::Package.new(ARGV.fetch(0))
+package.spec.runtime_dependencies.each do |dependency|
+  installed = system(
+    "gem", "install", dependency.name,
+    "--version", dependency.requirement.to_s,
+    "--conservative", "--no-document", "--verbose"
+  )
+  exit 1 unless installed
+end
+RUBY
+sudo gem install --local --conservative --no-document --verbose ./kisko-doorbell-0.5.1.gem
 /usr/local/bin/kisko-doorbell --version
 ```
 
 The reported version must match the prepared release version.
 
-Do not add `--local` unless every runtime dependency is already installed or available as a local gem. RubyGems otherwise cannot download a missing dependency such as `bigdecimal`. If an earlier local-only installation failed, retry with:
+Install the declared runtime dependencies first, then use `--local` for the unpublished doorbell gem. This avoids RubyGems downloading and processing its full legacy index after the local package name returns 404. If an earlier installation stopped while resolving dependencies, retry with:
 
 ```shell
 sudo apt install -y ruby-dev build-essential
-sudo gem install --conservative --no-document /tmp/kisko-doorbell-0.5.1.gem
+sudo gem install bigdecimal -v '~> 3.1' --conservative --no-document --verbose
+sudo gem install --local --conservative --no-document --verbose /tmp/kisko-doorbell-0.5.1.gem
 ```
 
 Create the restricted Slack token file once, or replace its contents when rotating the credential:

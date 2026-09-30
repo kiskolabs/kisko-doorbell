@@ -14,6 +14,10 @@ Specs cover SSH target validation, resumable progress, failure-state redaction, 
 
 An attempted run reached the target preflight through `pi@doorbell` and stopped before checkout or installation. Follow-up coverage requires `--sudo` to protect token-file and process-argument checks for that non-root account, and preflight failures now identify the unmet prerequisite.
 
+Release commands now stream sanitized standard output and standard error while retaining captured output for quiet validation commands. Gem installation uses RubyGems verbose mode so dependency downloads and native-extension builds remain visible during long Raspberry Pi operations.
+
+RubyGems returned 404 for the unpublished `kisko-doorbell` package and then downloaded its full legacy specifications index before resolving dependencies. The target install now reads runtime requirements from the built gem, installs those named dependencies through RubyGems, and installs the doorbell package with `--local` after its dependency set is present.
+
 ## Next
 
 - Commit and push the 0.5.1 release source.

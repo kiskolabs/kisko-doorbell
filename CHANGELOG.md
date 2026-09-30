@@ -7,3 +7,5 @@
 - Read the Slack token from a restricted file instead of exposing it in process arguments.
 - Add an operating procedure for measuring RTL-SDR temperature and current before applying cooling changes.
 - Release tagged builds to the Raspberry Pi with resumable checks and a required live doorbell confirmation.
+- Show live, redacted release output, including verbose gem installation progress.
+- Install runtime dependencies before the unpublished local gem to avoid full-index resolution delays.
