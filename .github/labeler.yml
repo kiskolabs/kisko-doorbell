@@ -1,0 +1,24 @@
+feature:
+  - head-branch: ["^feature", "feature"]
+patch:
+  - head-branch: ["^patch", "patch"]
+release:
+  - base-branch: "master"
+github config:
+  - changed-files:
+      - any-glob-to-any-file: ".github/**"
+config:
+  - changed-files:
+      - any-glob-to-any-file: ["bin/**", "exe/**", "Gemfile*", "*.gemspec"]
+ruby:
+  - changed-files:
+      - any-glob-to-any-file: "**/*.rb"
+spec:
+  - changed-files:
+      - any-glob-to-any-file: "spec/**"
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: ["rfcs/**", "**/*.md"]
+user scripts:
+  - changed-files:
+      - any-glob-to-any-file: "usr/**"

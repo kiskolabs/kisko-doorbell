@@ -12,11 +12,11 @@ require_relative "message_job"
 module Kisko
   module Doorbell
     class CLI
-      RTL_433_VERSION_REGEXP = /rtl_433 version ([\d\w\.-]+)/i
+      RTL_433_VERSION_REGEXP = /rtl_433 version ([\d\w.-]+)/i
 
       attr_reader :slack_token, :slack_channel, :doorbell_id, :logger, :test_mode
 
-      def initialize(slack_token: nil, slack_channel: nil, doorbell_id:, logger:, test_mode: false)
+      def initialize(doorbell_id:, logger:, slack_token: nil, slack_channel: nil, test_mode: false)
         @slack_token = slack_token
         @slack_channel = slack_channel
         @doorbell_id = doorbell_id ? Integer(doorbell_id) : nil
@@ -24,7 +24,7 @@ module Kisko
         @test_mode = test_mode
 
         SuckerPunch.logger = logger
-        SuckerPunch.exception_handler = -> (ex, _klass, _args) { Honeybadger.notify(ex) }
+        SuckerPunch.exception_handler = ->(ex, _klass, _args) { Honeybadger.notify(ex) }
       end
 
       def check_prerequisites
@@ -34,6 +34,7 @@ module Kisko
         return false unless check_slack
         return false unless check_doorbell_id
         return false unless check_yaml_store_path
+
         true
       end
 
@@ -42,7 +43,7 @@ module Kisko
 
         Open3.popen2e(rtl_433_path, *rtl_433_arguments) do |_stdin, io, wait_thr|
           logger.success "rtl_433 running (PID: #{wait_thr.pid})"
-          while (line = io.gets) do
+          while (line = io.gets)
             if line.include?("No supported devices found")
               logger.fatal line.rstrip
               return false
@@ -60,10 +61,10 @@ module Kisko
           end
         end
 
-        return true
-      rescue => exception
-        Honeybadger.notify(exception)
-        return false
+        true
+      rescue StandardError => e
+        Honeybadger.notify(e)
+        false
       end
 
       def check_rtl_433_path
@@ -98,33 +99,31 @@ module Kisko
       end
 
       def check_rtl_433
-        begin
-          Open3.popen2e(rtl_433_path, "-V") do |stdin, stdout_and_stderr, wait_thr|
-            version_output = stdout_and_stderr.read
+        Open3.popen2e(rtl_433_path, "-V") do |stdin, stdout_and_stderr, wait_thr|
+          version_output = stdout_and_stderr.read
 
-            stdin.close
-            stdout_and_stderr.close
+          stdin.close
+          stdout_and_stderr.close
 
-            exit_status = wait_thr.value.exitstatus
+          exit_status = wait_thr.value.exitstatus
 
-            if exit_status == 0
-              matches = RTL_433_VERSION_REGEXP.match(version_output)
-              logger.success "rtl_433 works", version: matches[1]
-              return true
-            else
-              logger.fatal "rtl_433 failed", exit_status: exit_status
+          if exit_status.zero?
+            matches = RTL_433_VERSION_REGEXP.match(version_output)
+            logger.success "rtl_433 works", version: matches[1]
+            return true
+          else
+            logger.fatal "rtl_433 failed", exit_status: exit_status
 
-              version_output.each_line do |line|
-                logger.fatal line
-              end
-
-              return false
+            version_output.each_line do |line|
+              logger.fatal line
             end
+
+            return false
           end
-        rescue Errno::ENOENT
-          logger.fatal "rtl_433 binary not found"
-          false
         end
+      rescue Errno::ENOENT
+        logger.fatal "rtl_433 binary not found"
+        false
       end
 
       def check_yaml_store_path

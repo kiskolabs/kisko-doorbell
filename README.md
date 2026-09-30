@@ -10,17 +10,21 @@ Add this line to your application's Gemfile:
 gem 'kisko-doorbell'
 ```
 
-And then execute:
+Then run:
 
-    $ bundle
+```shell
+bundle
+```
 
 Or install it yourself as:
 
-    $ gem install kisko-doorbell
+```shell
+gem install kisko-doorbell
+```
 
 ## Usage
 
-```
+```text
 Usage: kisko-doorbell [options]
     -d, --doorbell-id=ID             Doorbell ID (decimal, not hex)
     -c, --slack-channel=#CHANNEL     Slack channel

@@ -15,7 +15,7 @@ module Kisko
         "🛎 ding dong, someone wants in 🛎",
         "🔔 bing bong, the doorbell rang 🔔",
         "Hello 👋, please open the door"
-      ]
+      ].freeze
 
       URGENT_MESSAGES = [
         "someone is still at the door",
@@ -23,7 +23,7 @@ module Kisko
         "seriously. Open the door.",
         "open the 🚪, please",
         "someone seems to be waiting❗️"
-      ]
+      ].freeze
 
       attr_reader :line, :doorbell_id, :store_path, :slack_token, :slack_channel
 
@@ -72,7 +72,7 @@ module Kisko
       end
 
       private def store
-        @yaml_store ||= YAML::Store.new(store_path, true)
+        @store ||= YAML::Store.new(store_path, true)
       end
 
       private def next_message(last_message, last_message_sent_at, slack: false)

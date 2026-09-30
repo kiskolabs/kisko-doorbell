@@ -1,0 +1,84 @@
+require:
+  - ./lib/rubocop/cop/kisko/file_length
+
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+  TargetRubyVersion: 3.4
+  Exclude:
+    - .pray/**/*
+    - coverage/**/*
+    - pkg/**/*
+    - tmp/**/*
+    - usr/bin/**/*
+    - vendor/**/*
+
+Kisko/FileLengthWarning:
+  Enabled: true
+  Max: 150
+  HardMax: 300
+  Include:
+    - exe/**/*
+    - lib/**/*
+
+Kisko/FileLengthLimit:
+  Enabled: true
+  Max: 300
+  Severity: error
+  Include:
+    - exe/**/*
+    - lib/**/*
+
+Layout/LineLength:
+  Max: 120
+
+Layout/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: no_space
+
+Metrics/AbcSize:
+  Max: 30
+
+Metrics/ClassLength:
+  Max: 300
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/MethodLength:
+  Max: 30
+
+Metrics/ModuleLength:
+  Max: 300
+
+Metrics/PerceivedComplexity:
+  Max: 10
+
+Naming/PredicateMethod:
+  AllowedMethods:
+    - check_doorbell_id
+    - check_prerequisites
+    - check_rtl_433
+    - check_rtl_433_path
+    - check_slack
+
+Naming/VariableNumber:
+  AllowedIdentifiers:
+    - check_rtl_433
+
+Style/AccessModifierDeclarations:
+  EnforcedStyle: inline
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Gemspec/DevelopmentDependencies:
+  Enabled: false
+
+Gemspec/RequiredRubyVersion:
+  Enabled: false
