@@ -135,10 +135,10 @@ module Kisko
       end
 
       def rtl_433_arguments
-        common = ["-R", "115", "-R", "116", "-M", "newmodel", "-F", "json", "-f", "868300000"]
+        common = ["-R", "96", "-M", "newmodel", "-M", "protocol", "-F", "json", "-f", "433920000", "-s", "250000"]
 
         if test_mode
-          test_path = File.expand_path("../../../signals/g001_868.3M_250k.cu8", __dir__)
+          test_path = File.expand_path("../../../signals/g006_433.92M_250k.cu8", __dir__)
           logger.info "Using test signal", path: test_path
           common + ["-r", test_path]
         else

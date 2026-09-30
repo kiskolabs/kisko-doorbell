@@ -16,3 +16,4 @@ The Stable RFCs cover the shipped command-line, RF intake, and Slack delivery be
 - [RFC 0002](0002-command-line-operation.md) Command-line operation
 - [RFC 0003](0003-rf-event-intake.md) RF event intake
 - [RFC 0004](0004-slack-delivery.md) Slack delivery
+- [RFC 0100](0100-nexa-rf-event-intake.md) Nexa RF event intake

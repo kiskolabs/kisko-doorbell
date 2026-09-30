@@ -36,11 +36,11 @@ module Kisko
           json = JSON.parse(line)
           logger.debug "A doorbell just rang", json: json
 
-          if json["id"] == doorbell_id
+          if json["id"] == doorbell_id && json["state"] == "ON"
             logger.success "This is the doorbell we want", id: json["id"]
             notify_slack
           else
-            logger.debug "This isn't the doorbell we want", id: json["id"]
+            logger.debug "This isn't the doorbell event we want", id: json["id"]
           end
         rescue JSON::ParserError
           logger.warn "JSON parse error", json: line
