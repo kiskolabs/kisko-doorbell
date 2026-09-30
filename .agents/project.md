@@ -1,7 +1,5 @@
 ## Additional instructions
 
-### .agents/project.md
-
 kisko-doorbell is a Ruby gem and command-line service. It reads doorbell RF events from `rtl_433` through an RTL-SDR receiver and posts matching events to Slack. The default branch is `master`.
 
 Linear: https://linear.app/kisko/team/KIS/active
@@ -26,11 +24,11 @@ Evidence comes from git, specs, `rfcs/`, `docs/`, pull requests, Linear, GitHub,
 - Keep user-visible pending changes under `## Unreleased` in `CHANGELOG.md`. Move them to a versioned heading with the release date when cutting the release.
 - Use a new version for changed gem contents. Update `lib/kisko/doorbell/version.rb` before building; never replace an existing version with different bytes.
 - Commit every file intended for the gem before building because the gemspec packages files returned by `git ls-files`.
-- Before release, run `bundle exec rake`, `trunk check`, `RBENV_VERSION=3.4.6 pray verify --strict`, and `bundle exec rake build`. Inspect the built gem for required signal fixtures.
-- Deployment is manual. Install the built gem on the doorbell host, update its configured doorbell identifier, restart the service, inspect its logs, and verify live presses before tagging or publishing.
+- Before release, run `bundle exec rake`, `trunk check --all`, `RBENV_VERSION=3.4.6 pray verify --strict`, and `bundle exec rake build`. Inspect the built gem for required signal fixtures.
+- Deployment is operator-triggered through `usr/bin/release.rb`. The script deploys the exact pushed `master` commit, builds and installs the gem on the doorbell host, restarts and verifies the service, requires a confirmed live press, and only then creates and pushes the version tag.
 - Keep credentials out of command lines, release notes, logs, and built artifacts. Rotate an exposed credential before deployment.
-- Tag and push only after deployment validation. Run `bundle exec rake release` only when the intended gem server and authentication are configured and the user explicitly requested publication.
-- Do not run `gem push`, publish to RubyGems, or tag a release unless the user asks for that exact operation.
+- Run `bundle exec rake release` only when the intended gem server and authentication are configured and the user explicitly requested publication.
+- Do not run `gem push` or publish to RubyGems unless the user asks for that exact operation.
 
 ## Skills
 
@@ -51,5 +49,3 @@ RSpec tests live under `spec/`. Prefer production source files at 150 lines or f
 ## Jobs and configuration
 
 Background Slack delivery uses SuckerPunch in `lib/kisko/doorbell/message_job.rb`. The Slack destination comes from the `--slack-channel` CLI option.
-
-## Shared instructions
