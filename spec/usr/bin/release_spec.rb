@@ -110,6 +110,7 @@ RSpec.describe KiskoDoorbellRelease do
             return "" if label == "worktree check"
             return "master\n" if label == "branch lookup"
             return "abc123\n" if label == "HEAD lookup"
+            return "https://github.com/kiskolabs/kisko-doorbell.git\n" if label == "origin lookup"
             return "abc123\trefs/heads/master\n" if label == "remote master lookup"
 
             ""
@@ -138,6 +139,9 @@ RSpec.describe KiskoDoorbellRelease do
         expect(remote_commands).to include("Gem::Package.new")
         expect(remote_commands).to include('"gem", "install", dependency.name')
         expect(remote_commands).to include("gem install --local --conservative --no-document --verbose")
+        expect(remote_commands).to include(
+          "git clone --no-checkout https://github.com/kiskolabs/kisko-doorbell.git /home/pi/kisko-doorbell"
+        )
         expect(remote_commands).to include("systemctl restart kisko-doorbell")
         expect(remote_commands).to include("KISKO_DOORBELL_SLACK_TOKEN_FILE")
         expect(remote_commands).to include("sudo test -r /etc/kisko-doorbell/slack-token")

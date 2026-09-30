@@ -9,3 +9,4 @@
 - Release tagged builds to the Raspberry Pi with resumable checks and a required live doorbell confirmation.
 - Show live, redacted release output, including verbose gem installation progress.
 - Install runtime dependencies before the unpublished local gem to avoid full-index resolution delays.
+- Create the Raspberry Pi source checkout during release when the target path is absent.

@@ -264,6 +264,9 @@ module KiskoDoorbellRelease
       raise Error, "release must run from master, not #{branch.inspect}" unless branch == "master"
 
       commit = local(["git", "rev-parse", "HEAD"], "HEAD lookup", show_output: false).strip
+      @source_repository = local(["git", "remote", "get-url", "origin"], "origin lookup", show_output: false).strip
+      raise Error, "origin does not have a usable repository URL" if @source_repository.empty?
+
       remote_branch = local(
         ["git", "ls-remote", "--exit-code", "origin", "refs/heads/master"],
         "remote master lookup",
@@ -308,10 +311,6 @@ module KiskoDoorbellRelease
         command -v ruby >/dev/null || { echo 'Preflight failed: ruby is not installed.' >&2; exit 1; }
         command -v gem >/dev/null || { echo 'Preflight failed: gem is not installed.' >&2; exit 1; }
         command -v systemctl >/dev/null || { echo 'Preflight failed: systemctl is not installed.' >&2; exit 1; }
-        test -d #{quoted(@configuration.repository)}/.git || {
-          echo 'Preflight failed: the target repository is missing.' >&2
-          exit 1
-        }
         #{privileged("test -r #{quoted(@configuration.token_file)}")} || {
           echo 'Preflight failed: the Slack token file is not readable. Use --sudo for a non-root SSH account.' >&2
           exit 1
@@ -328,8 +327,20 @@ module KiskoDoorbellRelease
     end
 
     def remote_checkout(commit)
+      repository_parent = File.dirname(@configuration.repository)
       <<~SHELL
         set -eu
+        if test -e #{quoted(@configuration.repository)} && ! test -d #{quoted(@configuration.repository)}/.git; then
+          echo 'Checkout failed: the target path exists but is not a Git repository.' >&2
+          exit 1
+        fi
+        if ! test -d #{quoted(@configuration.repository)}/.git; then
+          test -d #{quoted(repository_parent)} && test -w #{quoted(repository_parent)} || {
+            echo 'Checkout failed: the target repository parent is not writable.' >&2
+            exit 1
+          }
+          git clone --no-checkout #{quoted(@source_repository)} #{quoted(@configuration.repository)}
+        fi
         cd #{quoted(@configuration.repository)}
         test -z "$(git status --porcelain)"
         git fetch --tags origin master
@@ -434,6 +445,7 @@ module KiskoDoorbellRelease
         "tag" => @tag,
         "host" => @configuration.host,
         "repository" => @configuration.repository,
+        "source_repository" => @source_repository,
         "service" => @configuration.service,
         "token_file" => @configuration.token_file,
         "executable" => @configuration.executable,

@@ -92,7 +92,7 @@ git push origin master
 usr/bin/release.rb --host pi@doorbell --sudo
 ```
 
-The script requires a clean `master` whose commit is already on `origin/master`. It runs the Ruby, Trunk, and Pray checks; verifies the restricted Slack token configuration; checks out the exact commit on the Raspberry Pi; builds and installs the gem; restarts and verifies the service; and requests a live button test. Only after that confirmation does it create and push the annotated version tag.
+The script requires a clean `master` whose commit is already on `origin/master`. It runs the Ruby, Trunk, and Pray checks; verifies the restricted Slack token configuration; clones the local `origin` into the target path when no checkout exists; checks out the exact commit on the Raspberry Pi; builds and installs the gem; restarts and verifies the service; and requests a live button test. Only after that confirmation does it create and push the annotated version tag. It refuses to replace a target path that exists but is not a Git repository.
 
 Progress is stored under `tmp/releases/`. Run the same command after a failure to resume at the first incomplete step. Use `--restart-progress` to rerun every step. The `--sudo` option is required for the `pi` account and expects passwordless sudo for protected preflight checks, gem installation, and systemd operations.
 

@@ -18,6 +18,8 @@ Release commands now stream sanitized standard output and standard error while r
 
 RubyGems returned 404 for the unpublished `kisko-doorbell` package and then downloaded its full legacy specifications index before resolving dependencies. The target install now reads runtime requirements from the built gem, installs those named dependencies through RubyGems, and installs the doorbell package with `--local` after its dependency set is present.
 
+The first automated checkout stopped because `/home/pi/kisko-doorbell` did not exist. The checkout step now clones the workstation's `origin` when the configured path is absent. It requires a writable parent and refuses an existing non-repository path.
+
 ## Next
 
 - Commit and push the 0.5.1 release source.
