@@ -8,7 +8,7 @@ Create and push the annotated version tag only after the automated target checks
 
 ## Effects
 
-The script runs the repository quality gates, verifies the target's restricted Slack token-file setup, checks out the release commit, builds and installs the gem with dependency resolution enabled, restarts the systemd service, and verifies its version and process arguments. It stops before tagging when any step or the live confirmation fails.
+The script runs the repository quality gates, including a full-tree Trunk check that remains effective on a clean release commit. It verifies the target's restricted Slack token-file setup, checks out the release commit, builds and installs the gem with dependency resolution enabled, restarts the systemd service, and verifies its version and process arguments. It stops before tagging when any step or the live confirmation fails.
 
 Specs cover SSH target validation, resumable progress, failure-state redaction, live confirmation, and the deployment sequence. The script has not been run against the doorbell host in this change.
 

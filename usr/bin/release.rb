@@ -264,7 +264,7 @@ module KiskoDoorbellRelease
 
     def run_local_checks
       local(["bundle", "exec", "rake"], "Ruby checks")
-      local(["trunk", "check"], "Trunk checks")
+      local(["trunk", "check", "--all"], "Trunk checks")
       local(["pray", "verify", "--strict"], "Pray verification", environment: {"RBENV_VERSION" => "3.4.6"})
     end
 

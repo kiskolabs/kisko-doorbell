@@ -110,6 +110,7 @@ RSpec.describe KiskoDoorbellRelease do
         expect(runner.calls).to include(
           hash_including(command: ["git", "push", "origin", "refs/tags/v0.5.1"])
         )
+        expect(runner.calls).to include(hash_including(command: ["trunk", "check", "--all"]))
         expect(output.string).to include("Type yes after the live check")
       end
     end
