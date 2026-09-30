@@ -344,7 +344,7 @@ module KiskoDoorbellRelease
       verify_existing_tag(commit)
       existing_tag = local(["git", "tag", "--list", @tag], "local release tag lookup", show_output: false)
       if existing_tag.strip.empty?
-        local(["git", "tag", "-a", @tag, "-m", "Release #{@tag}"], "release tag creation")
+        local(["git", "tag", "-a", @tag, "-m", "Release #{@tag}", commit], "release tag creation")
       end
       local(["git", "push", "origin", "refs/tags/#{@tag}"], "release tag push")
     end

@@ -105,7 +105,7 @@ RSpec.describe KiskoDoorbellRelease do
         expect(remote_commands).to include("KISKO_DOORBELL_SLACK_TOKEN_FILE")
         expect(remote_commands).to include("git checkout --detach abc123")
         expect(runner.calls).to include(
-          hash_including(command: ["git", "tag", "-a", "v0.5.1", "-m", "Release v0.5.1"])
+          hash_including(command: ["git", "tag", "-a", "v0.5.1", "-m", "Release v0.5.1", "abc123"])
         )
         expect(runner.calls).to include(
           hash_including(command: ["git", "push", "origin", "refs/tags/v0.5.1"])
