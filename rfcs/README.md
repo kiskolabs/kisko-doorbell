@@ -18,3 +18,4 @@ The Stable RFCs cover the shipped command-line, RF intake, and Slack delivery be
 - [RFC 0004](0004-slack-delivery.md) Slack delivery
 - [RFC 0100](0100-nexa-rf-event-intake.md) Nexa RF event intake
 - [RFC 0101](0101-rtl-sdr-thermal-operation.md) RTL-SDR thermal operation
+- [RFC 0102](0102-slack-token-file.md) Slack token file

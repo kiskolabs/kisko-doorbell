@@ -58,6 +58,9 @@ Metrics/ModuleLength:
 Metrics/PerceivedComplexity:
   Max: 10
 
+Metrics/ParameterLists:
+  Max: 6
+
 Naming/PredicateMethod:
   AllowedMethods:
     - check_doorbell_id

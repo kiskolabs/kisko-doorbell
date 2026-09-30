@@ -14,10 +14,13 @@ module Kisko
     class CLI
       RTL_433_VERSION_REGEXP = /rtl_433 version ([\d\w.-]+)/i
 
-      attr_reader :slack_token, :slack_channel, :doorbell_id, :logger, :test_mode
+      attr_reader :slack_channel, :slack_token_file, :doorbell_id, :logger, :test_mode
 
-      def initialize(doorbell_id:, logger:, slack_token: nil, slack_channel: nil, test_mode: false)
-        @slack_token = slack_token
+      def initialize(
+        doorbell_id:, logger:, slack_token: nil, slack_token_file: nil, slack_channel: nil, test_mode: false
+      )
+        @slack_token_argument = slack_token
+        @slack_token_file = slack_token_file
         @slack_channel = slack_channel
         @doorbell_id = doorbell_id ? Integer(doorbell_id) : nil
         @logger = logger
@@ -78,14 +81,24 @@ module Kisko
       end
 
       def check_slack
-        if slack_token && slack_channel
-          obfuscated_token = "#{slack_token[0..10]}..."
-          logger.success "Slack configured", token: obfuscated_token, channel: slack_channel
+        if slack_token && !slack_token.empty? && slack_channel
+          source = @slack_token_argument ? "argument" : "file"
+          logger.success "Slack configured", source: source, channel: slack_channel
           true
         else
           logger.fatal "Slack token and channel missing"
           false
         end
+      rescue SystemCallError => e
+        logger.fatal "Slack token file unreadable", path: slack_token_file, error: e.message
+        false
+      end
+
+      def slack_token
+        return @slack_token_argument unless @slack_token_argument.nil?
+        return unless slack_token_file
+
+        @slack_token ||= File.read(slack_token_file).strip
       end
 
       def check_doorbell_id

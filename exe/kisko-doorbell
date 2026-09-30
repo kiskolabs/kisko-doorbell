@@ -8,7 +8,7 @@ trap "SIGINT" do
   exit 130
 end
 
-options = {}
+options = {slack_token_file: ENV.fetch("KISKO_DOORBELL_SLACK_TOKEN_FILE", nil)}
 
 OptionParser.new do |opts|
   opts.banner = "Usage: kisko-doorbell [options]"
@@ -23,6 +23,10 @@ OptionParser.new do |opts|
 
   opts.on("-t", "--slack-token=TOKEN", "Slack API token") do |v|
     options[:slack_token] = v
+  end
+
+  opts.on("--slack-token-file=PATH", "Read the Slack API token from a file") do |v|
+    options[:slack_token_file] = v
   end
 
   opts.on("-T", "--[no-]test", "Run in test mode instead of using the receiver") do |v|

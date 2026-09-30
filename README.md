@@ -29,12 +29,21 @@ Usage: kisko-doorbell [options]
     -d, --doorbell-id=ID             Doorbell ID (decimal, not hex)
     -c, --slack-channel=#CHANNEL     Slack channel
     -t, --slack-token=TOKEN          Slack API token
+        --slack-token-file=PATH      Read the Slack API token from a file
     -T, --[no-]test                  Run in test mode instead of using the receiver
     -h, --help                       Show this message
     -v, --version                    Show version
 ```
 
 ## Sample systemd service
+
+Store the Slack token outside the unit and restrict it to the service account:
+
+```shell
+sudo install -d -m 700 /etc/kisko-doorbell
+sudoedit /etc/kisko-doorbell/slack-token
+sudo chmod 600 /etc/kisko-doorbell/slack-token
+```
 
 ```ini
 [Unit]
@@ -43,8 +52,9 @@ Description=Kisko Doorbell
 [Service]
 SyslogIdentifier=kisko-doorbell
 User=root
-Environment="HONEYBADGER_API_KEY=def456" "HONEYBADGER_ENV=production"
-ExecStart=/usr/local/bin/kisko-doorbell --slack-token="abcde12345" --slack-channel="#general" --doorbell-id=123456
+Environment="HONEYBADGER_ENV=production"
+Environment="KISKO_DOORBELL_SLACK_TOKEN_FILE=/etc/kisko-doorbell/slack-token"
+ExecStart=/usr/local/bin/kisko-doorbell "--slack-channel=#general" --doorbell-id=2810647
 ExecStop=/bin/kill -s QUIT $MAINPID
 Restart=always
 
