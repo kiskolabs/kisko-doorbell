@@ -86,7 +86,7 @@ RSpec.describe KiskoDoorbellRelease do
         end.new
         output = StringIO.new
         configuration = KiskoDoorbellRelease::Configuration.parse(
-          ["--host", "root@doorbell", "--progress", File.join(directory, "release.json")]
+          ["--host", "pi@doorbell", "--sudo", "--progress", File.join(directory, "release.json")]
         )
 
         result = described_class.new(
@@ -103,6 +103,8 @@ RSpec.describe KiskoDoorbellRelease do
         expect(remote_commands).not_to include("gem install --local")
         expect(remote_commands).to include("systemctl restart kisko-doorbell")
         expect(remote_commands).to include("KISKO_DOORBELL_SLACK_TOKEN_FILE")
+        expect(remote_commands).to include("sudo test -r /etc/kisko-doorbell/slack-token")
+        expect(remote_commands).to include('sudo cat "/proc/$main_pid/cmdline"')
         expect(remote_commands).to include("git checkout --detach abc123")
         expect(runner.calls).to include(
           hash_including(command: ["git", "tag", "-a", "v0.5.1", "-m", "Release v0.5.1", "abc123"])

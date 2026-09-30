@@ -12,10 +12,12 @@ The script runs the repository quality gates, including a full-tree Trunk check 
 
 Specs cover SSH target validation, resumable progress, failure-state redaction, live confirmation, and the deployment sequence. The script has not been run against the doorbell host in this change.
 
+An attempted run reached the target preflight through `pi@doorbell` and stopped before checkout or installation. Follow-up coverage requires `--sudo` to protect token-file and process-argument checks for that non-root account, and preflight failures now identify the unmet prerequisite.
+
 ## Next
 
 - Commit and push the 0.5.1 release source.
-- Run `usr/bin/release.rb --host root@doorbell` from an interactive workstation.
+- Run `usr/bin/release.rb --host pi@doorbell --sudo` from an interactive workstation.
 - Rotate the previously exposed Slack token before completing the deployment.
 
 ## Source

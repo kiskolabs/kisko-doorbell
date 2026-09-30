@@ -271,13 +271,22 @@ module KiskoDoorbellRelease
     def remote_preflight
       <<~SHELL
         set -eu
-        command -v git >/dev/null
-        command -v ruby >/dev/null
-        command -v gem >/dev/null
-        command -v systemctl >/dev/null
-        test -d #{quoted(@configuration.repository)}/.git
-        test -r #{quoted(@configuration.token_file)}
-        systemctl cat #{quoted(@configuration.service)} | grep -Fq #{quoted("KISKO_DOORBELL_SLACK_TOKEN_FILE=#{@configuration.token_file}")}
+        command -v git >/dev/null || { echo 'Preflight failed: git is not installed.' >&2; exit 1; }
+        command -v ruby >/dev/null || { echo 'Preflight failed: ruby is not installed.' >&2; exit 1; }
+        command -v gem >/dev/null || { echo 'Preflight failed: gem is not installed.' >&2; exit 1; }
+        command -v systemctl >/dev/null || { echo 'Preflight failed: systemctl is not installed.' >&2; exit 1; }
+        test -d #{quoted(@configuration.repository)}/.git || {
+          echo 'Preflight failed: the target repository is missing.' >&2
+          exit 1
+        }
+        #{privileged("test -r #{quoted(@configuration.token_file)}")} || {
+          echo 'Preflight failed: the Slack token file is not readable. Use --sudo for a non-root SSH account.' >&2
+          exit 1
+        }
+        systemctl cat #{quoted(@configuration.service)} | grep -Fq #{quoted("KISKO_DOORBELL_SLACK_TOKEN_FILE=#{@configuration.token_file}")} || {
+          echo 'Preflight failed: the systemd unit does not use the configured Slack token file.' >&2
+          exit 1
+        }
         if systemctl cat #{quoted(@configuration.service)} | grep -Fq -- '--slack-token='; then
           echo 'The systemd unit still passes the Slack token in an argument.' >&2
           exit 1
@@ -329,7 +338,7 @@ module KiskoDoorbellRelease
         test "$(#{quoted(@configuration.executable)} --version)" = #{quoted(expected_version)}
         main_pid="$(systemctl show --property=MainPID --value #{quoted(@configuration.service)})"
         test "$main_pid" -gt 0
-        if tr '\0' '\n' < "/proc/$main_pid/cmdline" | grep -Fq -- '--slack-token='; then
+        if #{process_argument_reader} "/proc/$main_pid/cmdline" | tr '\\0' '\\n' | grep -Fq -- '--slack-token='; then
           echo 'The running service still exposes the Slack token in an argument.' >&2
           exit 1
         fi
@@ -381,7 +390,10 @@ module KiskoDoorbellRelease
         "tag" => @tag,
         "host" => @configuration.host,
         "repository" => @configuration.repository,
-        "service" => @configuration.service
+        "service" => @configuration.service,
+        "token_file" => @configuration.token_file,
+        "executable" => @configuration.executable,
+        "use_sudo" => @configuration.use_sudo?
       }
     end
 
@@ -398,6 +410,10 @@ module KiskoDoorbellRelease
 
     def privileged(command)
       @configuration.use_sudo? ? "sudo #{command}" : command
+    end
+
+    def process_argument_reader
+      @configuration.use_sudo? ? "sudo cat" : "cat"
     end
 
     def quoted(value)

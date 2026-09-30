@@ -89,12 +89,12 @@ git add --all
 git commit -m "Release 0.5.1"
 git push origin master
 
-usr/bin/release.rb --host root@doorbell
+usr/bin/release.rb --host pi@doorbell --sudo
 ```
 
 The script requires a clean `master` whose commit is already on `origin/master`. It runs the Ruby, Trunk, and Pray checks; verifies the restricted Slack token configuration; checks out the exact commit on the Raspberry Pi; builds and installs the gem; restarts and verifies the service; and requests a live button test. Only after that confirmation does it create and push the annotated version tag.
 
-Progress is stored under `tmp/releases/`. Run the same command after a failure to resume at the first incomplete step. Use `--restart-progress` to rerun every step. Add `--sudo` when the SSH account is not root and has passwordless sudo for gem installation and systemd operations.
+Progress is stored under `tmp/releases/`. Run the same command after a failure to resume at the first incomplete step. Use `--restart-progress` to rerun every step. The `--sudo` option is required for the `pi` account and expects passwordless sudo for protected preflight checks, gem installation, and systemd operations.
 
 This repository is not configured for public gem publication. Do not run `bundle exec rake release` or `gem push` unless the intended gem server has been configured and publication was explicitly requested.
 
@@ -122,7 +122,7 @@ sudo gem install --conservative --no-document ./kisko-doorbell-0.5.1.gem
 /usr/local/bin/kisko-doorbell --version
 ```
 
-The reported version must match the checked-out tag.
+The reported version must match the prepared release version.
 
 Do not add `--local` unless every runtime dependency is already installed or available as a local gem. RubyGems otherwise cannot download a missing dependency such as `bigdecimal`. If an earlier local-only installation failed, retry with:
 
@@ -137,9 +137,10 @@ Create the restricted Slack token file once, or replace its contents when rotati
 sudo install -d -m 700 -o root -g root /etc/kisko-doorbell
 sudoedit /etc/kisko-doorbell/slack-token
 sudo chmod 600 /etc/kisko-doorbell/slack-token
+sudo systemctl edit --full kisko-doorbell
 ```
 
-Ensure the service uses `KISKO_DOORBELL_SLACK_TOKEN_FILE` as shown in the sample unit above and does not contain `--slack-token`. Then reload, restart, and inspect it:
+Rotate the previously exposed Slack credential before writing the replacement to this file. In the unit editor, use `KISKO_DOORBELL_SLACK_TOKEN_FILE` as shown in the sample unit above and remove `--slack-token`. Then reload, restart, and inspect it:
 
 ```shell
 sudo systemctl daemon-reload
