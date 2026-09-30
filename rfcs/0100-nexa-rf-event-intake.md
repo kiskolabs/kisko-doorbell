@@ -5,7 +5,7 @@
 - Created: 2026-09-30
 - Author: Kisko Labs
 - Feedback until: 2026-10-14
-- Relates: RFC 0003
+- Relates: RFC 0003, RFC 0101
 - Supersedes: RFC 0003
 
 ## Summary
@@ -85,4 +85,3 @@ RFC 0003 specifies the existing fixed-frequency, fixed-decoder intake and its re
 - Should CI install rtl_433 and replay the fixture as an integration check?
 - What model is printed on the installed outdoor transmitter, if the marking is readable?
 - Does migration need runtime configuration for coexistence with the old Honeywell hardware?
-- What measured case temperature and USB current distinguish normal continuous operation from a receiver fault?
